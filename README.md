@@ -1,0 +1,1 @@
+# lyrics-sync-cli
