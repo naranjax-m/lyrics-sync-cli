@@ -239,3 +239,58 @@ def main():
     except RuntimeError as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
         sys.exit(1)
+
+    if not backend.is_available():
+        console.print(
+            "[bold red]Required system tool not found.[/bold red]\n"
+            "Check README.md to install the requirement for your platform "
+            "(playerctl / winsdk / nowplaying-cli)."
+        )
+        sys.exit(1)
+
+    current_track: NowPlaying | None = None
+    lyrics_result: LyricsResult | None = None
+    status_msg = ""
+
+    with Live(console=console, refresh_per_second=args.refresh_fps, screen=False) as live:
+        while True:
+            now = backend.get_current()
+
+            if now is None:
+                current_track = None
+                lyrics_result = None
+                live.update(render_frame(None, [], -1, synced=False, ascii_mode=args.ascii_mode))
+                time.sleep(args.interval)
+                continue
+
+            if current_track is None or not tracks_match(current_track, now):
+                current_track = now
+                status_msg = "Looking up synced lyrics..."
+                live.update(render_frame(now, [], -1, synced=False, status_msg=status_msg, ascii_mode=args.ascii_mode))
+                lyrics_result = fetch_lyrics(
+                    track_name=now.title,
+                    artist_name=now.artist,
+                    album_name=now.album,
+                    duration=now.duration or None,
+                )
+                if lyrics_result is None:
+                    status_msg = "No lyrics found for this track."
+                elif not lyrics_result.synced:
+                    status_msg = "Only unsynced (plain) lyrics are available."
+            else:
+                current_track = now
+
+            if lyrics_result and lyrics_result.synced:
+                idx = current_line_index(lyrics_result.lines, now.position)
+                live.update(render_frame(now, lyrics_result.lines, idx, synced=True, ascii_mode=args.ascii_mode))
+            else:
+                live.update(render_frame(now, [], -1, synced=False, status_msg=status_msg, ascii_mode=args.ascii_mode))
+
+            time.sleep(args.interval)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        console.print("\n[bold]Exiting...[/bold]")
