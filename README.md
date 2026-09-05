@@ -27,17 +27,14 @@ Synced lyrics are looked up in real time on
 [LRCLIB](https://lrclib.net), a free, public database of lyrics in LRC
 format that requires no authentication.
 
-# Install on Arch Based
+## Quick install on Arch Linux (recommended)
 
 The project includes `.sh` scripts that do everything automatically:
 
 ```bash
-git clone https://github.com/naranjax-m/lyrics-sync-cli
 cd lyrics-sync-cli
 chmod +x install.sh run.sh uninstall.sh
 ./install.sh
-chmod +x install-global.sh
-./install-global.sh
 ```
 
 `install.sh` does the following:
@@ -49,7 +46,7 @@ chmod +x install-global.sh
 To **start the program** after installing:
 
 ```bash
-lyrics-sync
+./run.sh
 ```
 
 or, once you've opened a new terminal (or run `source ~/.bashrc` / `source ~/.zshrc`):
@@ -58,16 +55,56 @@ or, once you've opened a new terminal (or run `source ~/.bashrc` / `source ~/.zs
 lyrics-sync
 ```
 
-`lyrics-sync` automatically activates the virtual environment and runs
+`run.sh` automatically activates the virtual environment and runs
 `main.py`. Any argument you pass gets forwarded to the program, e.g.:
 
 ```bash
-lyrics-sync --interval 0.3      # refresh playback position more often
-lyrics-sync --refresh-fps 8     # refresh the UI more often
-lyrics-sync --ascii             # show the current word as a big ASCII-art banner
+./run.sh --interval 0.3      # refresh playback position more often
+./run.sh --refresh-fps 8     # refresh the UI more often
+./run.sh --ascii             # show the current word as a big ASCII-art banner
 ```
 
 The same works through the alias: `lyrics-sync --ascii`, etc.
+
+### Using fish shell instead of bash
+
+If your shell is [fish](https://fishshell.com/), use `run.fish`
+instead of `run.sh` — it does the exact same thing (activates the
+virtual environment and runs `main.py`), just written in fish syntax:
+
+```fish
+chmod +x run.fish
+./run.fish
+./run.fish --ascii
+./run.fish --search "Artist Name - Song Title"
+./run.fish --install ~/Lyrics "Artist Name - Song Title"
+```
+
+If you'd like a `lyrics-sync` function/alias in fish, add this to
+`~/.config/fish/config.fish` (adjust the path to your project):
+
+```fish
+alias lyrics-sync '~/lyrics-sync-cli/run.fish'
+```
+
+then reload with `source ~/.config/fish/config.fish`.
+
+For a version that works from **any directory**, without hardcoding a
+path yourself, use `install-global.fish` instead — it resolves the
+project's absolute location once and writes it into a fish function
+that auto-loads in every new shell:
+
+```fish
+chmod +x install-global.fish
+./install-global.fish
+```
+
+Then, from anywhere, in any new fish shell:
+
+```fish
+lyrics-sync
+lyrics-sync --ascii
+```
 
 To **remove the virtual environment** (e.g. to reinstall from scratch):
 
@@ -79,6 +116,30 @@ To **remove the virtual environment** (e.g. to reinstall from scratch):
 > have them playing in a Chrome, Firefox, or any Chromium/Firefox-based
 > browser tab: they expose the Media Session API via MPRIS
 > automatically, just like Spotify.
+
+## Run it from any terminal session
+
+If you'd like a global `lyrics-sync` command that works from **any**
+terminal/session — without having to `cd` into the project folder —
+run the extra script included for this:
+
+```bash
+chmod +x install-global.sh
+./install-global.sh
+```
+
+This creates a small bridge script at `~/.local/bin/lyrics-sync`
+pointing back to this project (using its `venv` and `run.sh`), and
+makes sure `~/.local/bin` is on your `PATH`. It does **not** create a
+daemon or background process — it's just a globally available command
+you can invoke whenever you want.
+
+Open a new terminal (or run `source ~/.bashrc` / `source ~/.zshrc`)
+and then, from anywhere:
+
+```bash
+lyrics-sync
+```
 
 ## Manual installation (other distros / other systems)
 
@@ -116,7 +177,7 @@ queries LRCLIB directly by title/artist, shows a numbered table of
 matches, and lets you pick one to view.
 
 ```bash
-lyrics-sync --search "Artist Name - Song Title"
+./run.sh --search "Artist Name - Song Title"
 ```
 
 ## Save a song's lyrics directly with `--install`
@@ -128,9 +189,9 @@ closest match on LRCLIB is picked automatically and its lyrics are
 saved into that folder; `~` is expanded automatically.
 
 ```bash
-lyrics-sync --install       [DESTINATION FOLDER] [song name or closest match]
-lyrics-sync --txtinstall    [DESTINATION FOLDER] [song name or closest match]
-lyrics-sync --dminstall     [DESTINATION FOLDER] [song name or closest match]
+./run.sh --install       [DESTINATION FOLDER] [song name or closest match]
+./run.sh --txtinstall    [DESTINATION FOLDER] [song name or closest match]
+./run.sh --dminstall     [DESTINATION FOLDER] [song name or closest match]
 ```
 
 | Flag             | Output                                                                 |
@@ -142,9 +203,9 @@ lyrics-sync --dminstall     [DESTINATION FOLDER] [song name or closest match]
 Examples:
 
 ```bash
-lyrics-sync --install ~/Lyrics "Artist Name - Song Title"
-lyrics-sync --txtinstall ~/Lyrics "Artist Name - Song Title"
-lyrics-sync --dminstall ~/Lyrics "Artist Name - Song Title"
+./run.sh --install ~/Lyrics "Artist Name - Song Title"
+./run.sh --txtinstall ~/Lyrics "Artist Name - Song Title"
+./run.sh --dminstall ~/Lyrics "Artist Name - Song Title"
 ```
 
 These flags (and `--search`) run independently of the now-playing
@@ -161,7 +222,7 @@ playback advances through the line — nothing else is shown in that
 area, just one word at a time.
 
 ```bash
-lyrics-sync --ascii
+./run.sh --ascii
 ```
 
 ## Notes and limitations
@@ -186,9 +247,12 @@ lyrics-sync-cli/
 │   ├── windows.py          # GSMTC / winsdk backend
 │   └── macos.py            # MediaRemote / nowplaying-cli backend
 ├── install.sh              # Automatic installation (Arch Linux)
-├── run.sh                  # Activates the environment and runs the program
+├── run.sh                  # Activates the environment and runs the program (bash)
+├── run.fish                # Same as run.sh, for fish shell
+├── install-global.fish     # Creates a global "lyrics-sync" fish function (any directory)
 ├── uninstall.sh            # Removes the virtual environment
 ├── install-global.sh       # Creates a global "lyrics-sync" command (any session)
 ├── requirements.txt
 └── README.md
 ```
+
