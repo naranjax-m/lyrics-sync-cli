@@ -16,9 +16,9 @@ Usage:
     python main.py --interval 0.5
     python main.py --ascii
     python main.py --search "artist track name"
-    python main.py --search "artist track name" --install ~/Lyrics
-    python main.py --search "artist track name" --txtinstall ~/Lyrics
-    python main.py --search "artist track name" --dminstall ~/Lyrics
+    python main.py --install [DESTINATION FOLDER] [song name or closest match]
+    python main.py --txtinstall [DESTINATION FOLDER] [song name or closest match]
+    python main.py --dminstall [DESTINATION FOLDER] [song name or closest match]
 """
 
 import argparse
@@ -59,27 +59,26 @@ def parse_args():
     )
     parser.add_argument(
         "--search", metavar="QUERY", default=None,
-        help="Search LRCLIB for a song by title/artist (e.g. "
-             "--search \"Artist Name - Song Title\") and display its "
-             "lyrics, without needing anything to be currently playing.",
+        help="Search LRCLIB for a song by title/artist and browse the "
+             "matches interactively, without needing anything to be "
+             "currently playing.",
     )
     parser.add_argument(
-        "--install", metavar="DIR", default=None,
-        help="Used together with --search. Saves the selected song's "
-             "lyrics into DIR: as a .lrc file (with timestamps) if "
-             "synced lyrics are available, otherwise as a .txt file.",
+        "--install", nargs=2, metavar=("FOLDER", "SONG"), default=None,
+        help="Find SONG on LRCLIB (closest match, picked automatically) "
+             "and save its lyrics into FOLDER: as a .lrc file (with "
+             "timestamps) if synced lyrics exist, otherwise as .txt.",
     )
     parser.add_argument(
-        "--txtinstall", metavar="DIR", default=None,
-        help="Used together with --search. Saves the selected song's "
-             "lyrics into DIR as a plain .txt file (timestamps "
-             "stripped), regardless of whether synced lyrics exist.",
+        "--txtinstall", nargs=2, metavar=("FOLDER", "SONG"), default=None,
+        help="Same as --install, but always saves a plain .txt file "
+             "(timestamps stripped), regardless of whether synced "
+             "lyrics exist.",
     )
     parser.add_argument(
-        "--dminstall", metavar="DIR", default=None,
-        help="Used together with --search. Saves the selected song's "
-             "lyrics into DIR as a .dm file (plain text content, "
-             "timestamps stripped, with a .dm extension).",
+        "--dminstall", nargs=2, metavar=("FOLDER", "SONG"), default=None,
+        help="Same as --install, but saves the file with a .dm "
+             "extension instead (plain text content).",
     )
     return parser.parse_args()
 
@@ -111,17 +110,23 @@ def _save_file(directory: str, filename: str, content: str) -> str:
     return path
 
 
-def run_search(
-    query: str,
-    install_dir: str = None,
-    txtinstall_dir: str = None,
-    dminstall_dir: str = None,
-) -> None:
+def _plain_body(item: dict) -> str:
+    synced_raw = item.get("syncedLyrics")
+    plain_raw = item.get("plainLyrics")
+    if synced_raw:
+        lines = parse_lrc(synced_raw)
+        return "\n".join(line.text for line in lines) or "(empty)"
+    if plain_raw:
+        return plain_raw
+    return "No lyrics available for this track on LRCLIB."
+
+
+def run_search(query: str) -> None:
     """
     Looks up `query` on LRCLIB, shows a numbered results table, lets
-    the user pick one, and either displays that track's lyrics in the
-    terminal or saves them to disk, depending on which --*install
-    flag (if any) was passed.
+    the user pick one, and displays that track's lyrics in the
+    terminal (synced lyrics are shown as plain lines, without
+    timestamps, since there's no live playback to sync against).
     """
     console.print(f"[bold cyan]Searching LRCLIB for:[/bold cyan] {query}")
     results = search_songs(query, limit=10)
@@ -170,50 +175,63 @@ def run_search(
         return
 
     item = results[idx]
-    synced_raw = item.get("syncedLyrics")
-    plain_raw = item.get("plainLyrics")
     title = item.get("trackName") or "lyrics"
     artist = item.get("artistName") or ""
     header = f"{title} — {artist}" if artist else title
+    console.print(Panel(_plain_body(item), title=header, border_style="magenta"))
+
+
+def run_install(folder: str, song: str, mode: str) -> None:
+    """
+    Finds `song` on LRCLIB, automatically takes the closest match
+    (the top-ranked search result), and saves its lyrics into
+    `folder`. `mode` controls the saved format:
+        "install" -> .lrc (synced) or .txt (plain) depending on availability
+        "txt"     -> always plain .txt
+        "dm"      -> always plain content, .dm extension
+    """
+    console.print(f"[bold cyan]Searching LRCLIB for:[/bold cyan] {song}")
+    results = search_songs(song, limit=5)
+
+    if not results:
+        console.print("[bold red]No results found — nothing was saved.[/bold red]")
+        return
+
+    item = results[0]  # closest match, as ranked by LRCLIB's search
+    title = item.get("trackName") or "lyrics"
+    artist = item.get("artistName") or ""
     base_name = _sanitize_filename(f"{title} - {artist}" if artist else title)
+    synced_raw = item.get("syncedLyrics")
 
-    if synced_raw:
-        lines = parse_lrc(synced_raw)
-        plain_body = "\n".join(line.text for line in lines) or "(empty)"
-    elif plain_raw:
-        plain_body = plain_raw
-    else:
-        plain_body = "No lyrics available for this track on LRCLIB."
-
-    saved_paths = []
-
-    if install_dir:
+    if mode == "install":
         if synced_raw:
-            path = _save_file(install_dir, f"{base_name}.lrc", synced_raw)
+            path = _save_file(folder, f"{base_name}.lrc", synced_raw)
         else:
-            path = _save_file(install_dir, f"{base_name}.txt", plain_body)
-        saved_paths.append(path)
+            path = _save_file(folder, f"{base_name}.txt", _plain_body(item))
+    elif mode == "txt":
+        path = _save_file(folder, f"{base_name}.txt", _plain_body(item))
+    else:  # "dm"
+        path = _save_file(folder, f"{base_name}.dm", _plain_body(item))
 
-    if txtinstall_dir:
-        path = _save_file(txtinstall_dir, f"{base_name}.txt", plain_body)
-        saved_paths.append(path)
-
-    if dminstall_dir:
-        path = _save_file(dminstall_dir, f"{base_name}.dm", plain_body)
-        saved_paths.append(path)
-
-    if saved_paths:
-        for path in saved_paths:
-            console.print(f"[bold green]Saved:[/bold green] {path}")
-    else:
-        console.print(Panel(plain_body, title=header, border_style="magenta"))
+    match_label = f"{title} — {artist}" if artist else title
+    console.print(f"[bold cyan]Closest match:[/bold cyan] {match_label}")
+    console.print(f"[bold green]Saved:[/bold green] {path}")
 
 
 def main():
     args = parse_args()
 
+    if args.install:
+        run_install(args.install[0], args.install[1], mode="install")
+        return
+    if args.txtinstall:
+        run_install(args.txtinstall[0], args.txtinstall[1], mode="txt")
+        return
+    if args.dminstall:
+        run_install(args.dminstall[0], args.dminstall[1], mode="dm")
+        return
     if args.search:
-        run_search(args.search, args.install, args.txtinstall, args.dminstall)
+        run_search(args.search)
         return
 
     try:
@@ -221,59 +239,3 @@ def main():
     except RuntimeError as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
         sys.exit(1)
-
-    if not backend.is_available():
-        console.print(
-            "[bold red]Required system tool not found.[/bold red]\n"
-            "Check README.md to install the requirement for your platform "
-            "(playerctl / winsdk / nowplaying-cli)."
-        )
-        sys.exit(1)
-
-    current_track: NowPlaying | None = None
-    lyrics_result: LyricsResult | None = None
-    status_msg = ""
-
-    with Live(console=console, refresh_per_second=args.refresh_fps, screen=False) as live:
-        while True:
-            now = backend.get_current()
-
-            if now is None:
-                current_track = None
-                lyrics_result = None
-                live.update(render_frame(None, [], -1, synced=False, ascii_mode=args.ascii_mode))
-                time.sleep(args.interval)
-                continue
-
-            if current_track is None or not tracks_match(current_track, now):
-                current_track = now
-                status_msg = "Looking up synced lyrics..."
-                live.update(render_frame(now, [], -1, synced=False, status_msg=status_msg, ascii_mode=args.ascii_mode))
-                lyrics_result = fetch_lyrics(
-                    track_name=now.title,
-                    artist_name=now.artist,
-                    album_name=now.album,
-                    duration=now.duration or None,
-                )
-                if lyrics_result is None:
-                    status_msg = "No lyrics found for this track."
-                elif not lyrics_result.synced:
-                    status_msg = "Only unsynced (plain) lyrics are available."
-            else:
-                current_track = now
-
-            if lyrics_result and lyrics_result.synced:
-                idx = current_line_index(lyrics_result.lines, now.position)
-                live.update(render_frame(now, lyrics_result.lines, idx, synced=True, ascii_mode=args.ascii_mode))
-            else:
-                live.update(render_frame(now, [], -1, synced=False, status_msg=status_msg, ascii_mode=args.ascii_mode))
-
-            time.sleep(args.interval)
-
-
-if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        console.print("\n[bold]Exiting...[/bold]")
-
