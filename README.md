@@ -32,9 +32,12 @@ format that requires no authentication.
 The project includes `.sh` scripts that do everything automatically:
 
 ```bash
+git clone https://github.com/naranjax-m/lyrics-sync-cli
 cd lyrics-sync-cli
 chmod +x install.sh run.sh uninstall.sh
 ./install.sh
+chmod +x install-global.sh
+./install-global.sh
 ```
 
 `install.sh` does the following:
