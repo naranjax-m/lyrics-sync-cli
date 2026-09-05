@@ -41,11 +41,18 @@ chmod +x install.sh run.sh uninstall.sh
 1. Installs `playerctl` via `pacman` (MPRIS/D-Bus detection mechanism), if not already installed.
 2. Checks that `python`/`pip` are available (installs them if missing).
 3. Creates a virtual environment (`venv/`) and installs the dependencies from `requirements.txt` inside it.
+4. Adds a `lyrics-sync` shell **alias** (pointing at this project's `run.sh`) to your `~/.bashrc` and/or `~/.zshrc`, so you can just type `lyrics-sync` from that shell.
 
 To **start the program** after installing:
 
 ```bash
 ./run.sh
+```
+
+or, once you've opened a new terminal (or run `source ~/.bashrc` / `source ~/.zshrc`):
+
+```bash
+lyrics-sync
 ```
 
 `run.sh` automatically activates the virtual environment and runs
@@ -56,6 +63,8 @@ To **start the program** after installing:
 ./run.sh --refresh-fps 8     # refresh the UI more often
 ./run.sh --ascii             # show the current word as a big ASCII-art banner
 ```
+
+The same works through the alias: `lyrics-sync --ascii`, etc.
 
 To **remove the virtual environment** (e.g. to reinstall from scratch):
 
@@ -162,3 +171,4 @@ lyrics-sync-cli/
 ├── requirements.txt
 └── README.md
 ```
+
