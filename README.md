@@ -28,7 +28,7 @@ Synced lyrics are looked up in real time on
 format that requires no authentication.
 
 # Install
-#Arch
+>Arch
 
 The project includes `.sh` scripts that do everything automatically:
 
