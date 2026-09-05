@@ -27,8 +27,7 @@ Synced lyrics are looked up in real time on
 [LRCLIB](https://lrclib.net), a free, public database of lyrics in LRC
 format that requires no authentication.
 
-# Install
->Arch
+# Install on Arch Based
 
 The project includes `.sh` scripts that do everything automatically:
 
@@ -117,7 +116,7 @@ queries LRCLIB directly by title/artist, shows a numbered table of
 matches, and lets you pick one to view.
 
 ```bash
-./run.sh --search "Artist Name - Song Title"
+lyrics-sync --search "Artist Name - Song Title"
 ```
 
 ## Save a song's lyrics directly with `--install`
@@ -129,9 +128,9 @@ closest match on LRCLIB is picked automatically and its lyrics are
 saved into that folder; `~` is expanded automatically.
 
 ```bash
-./run.sh --install       [DESTINATION FOLDER] [song name or closest match]
-./run.sh --txtinstall    [DESTINATION FOLDER] [song name or closest match]
-./run.sh --dminstall     [DESTINATION FOLDER] [song name or closest match]
+lyrics-sync --install       [DESTINATION FOLDER] [song name or closest match]
+lyrics-sync --txtinstall    [DESTINATION FOLDER] [song name or closest match]
+lyrics-sync --dminstall     [DESTINATION FOLDER] [song name or closest match]
 ```
 
 | Flag             | Output                                                                 |
@@ -143,9 +142,9 @@ saved into that folder; `~` is expanded automatically.
 Examples:
 
 ```bash
-./run.sh --install ~/Lyrics "Artist Name - Song Title"
-./run.sh --txtinstall ~/Lyrics "Artist Name - Song Title"
-./run.sh --dminstall ~/Lyrics "Artist Name - Song Title"
+lyrics-sync --install ~/Lyrics "Artist Name - Song Title"
+lyrics-sync --txtinstall ~/Lyrics "Artist Name - Song Title"
+lyrics-sync --dminstall ~/Lyrics "Artist Name - Song Title"
 ```
 
 These flags (and `--search`) run independently of the now-playing
@@ -162,7 +161,7 @@ playback advances through the line — nothing else is shown in that
 area, just one word at a time.
 
 ```bash
-./run.sh --ascii
+lyrics-sync --ascii
 ```
 
 ## Notes and limitations
