@@ -53,6 +53,26 @@ def parse_lrc(lrc_text: str) -> List[LyricLine]:
     return lines
 
 
+def search_songs(query: str, limit: int = 10, timeout: float = 6.0) -> List[dict]:
+    """
+    Free-text search on LRCLIB (e.g. "artist track name"). Returns the
+    raw list of matches (each with trackName, artistName, albumName,
+    duration, syncedLyrics/plainLyrics, etc.) so the caller can let the
+    user pick one before fetching/displaying the full lyrics.
+    """
+    session = requests.Session()
+    session.headers.update({"User-Agent": "lyrics-sync-cli/1.0"})
+    try:
+        r = session.get(f"{LRCLIB_BASE}/search", params={"q": query}, timeout=timeout)
+        if r.status_code == 200:
+            items = r.json()
+            if isinstance(items, list):
+                return items[:limit]
+    except requests.RequestException:
+        pass
+    return []
+
+
 def fetch_lyrics(
     track_name: str,
     artist_name: str,
