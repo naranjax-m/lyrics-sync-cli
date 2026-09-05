@@ -80,30 +80,6 @@ To **remove the virtual environment** (e.g. to reinstall from scratch):
 > browser tab: they expose the Media Session API via MPRIS
 > automatically, just like Spotify.
 
-## Run it from any terminal session
-
-If you'd like a global `lyrics-sync` command that works from **any**
-terminal/session — without having to `cd` into the project folder —
-run the extra script included for this:
-
-```bash
-chmod +x install-global.sh
-./install-global.sh
-```
-
-This creates a small bridge script at `~/.local/bin/lyrics-sync`
-pointing back to this project (using its `venv` and `run.sh`), and
-makes sure `~/.local/bin` is on your `PATH`. It does **not** create a
-daemon or background process — it's just a globally available command
-you can invoke whenever you want.
-
-Open a new terminal (or run `source ~/.bashrc` / `source ~/.zshrc`)
-and then, from anywhere:
-
-```bash
-lyrics-sync
-```
-
 ## Manual installation (other distros / other systems)
 
 ### 1. Install the Python dependencies
