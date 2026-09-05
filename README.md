@@ -27,7 +27,8 @@ Synced lyrics are looked up in real time on
 [LRCLIB](https://lrclib.net), a free, public database of lyrics in LRC
 format that requires no authentication.
 
-## Quick install on Arch Linux (recommended)
+# Install
+#Arch
 
 The project includes `.sh` scripts that do everything automatically:
 
