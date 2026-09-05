@@ -130,6 +130,38 @@ directly.
 python main.py
 ```
 
+## Look up any song with `--search`
+
+You don't need anything to be playing to look up lyrics: `--search`
+queries LRCLIB directly by title/artist, shows a numbered table of
+matches, and lets you pick one to view (or save) its lyrics.
+
+```bash
+./run.sh --search "Artist Name - Song Title"
+```
+
+By default the selected song's lyrics are printed in the terminal. If
+you'd rather save them to a file, use one of the `--*install` flags
+below instead (each takes the destination folder as its argument;
+`~` is expanded automatically):
+
+| Flag             | Output                                                                 |
+|------------------|-------------------------------------------------------------------------|
+| `--install DIR`  | Saves a `.lrc` file (with timestamps) if synced lyrics exist, otherwise a `.txt` file. |
+| `--txtinstall DIR` | Always saves a plain `.txt` file (timestamps stripped).               |
+| `--dminstall DIR`  | Same content as `--txtinstall`, saved with a `.dm` extension instead.  |
+
+Examples:
+
+```bash
+./run.sh --search "Artist Name - Song Title" --install ~/Lyrics
+./run.sh --search "Artist Name - Song Title" --txtinstall ~/Lyrics
+./run.sh --search "Artist Name - Song Title" --dminstall ~/Lyrics
+```
+
+These flags only apply to `--search` — the normal now-playing mode
+never writes anything to disk.
+
 ## ASCII word mode (`--ascii`)
 
 Pass `--ascii` to switch the lyric display from the line-by-line view
