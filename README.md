@@ -134,32 +134,42 @@ python main.py
 
 You don't need anything to be playing to look up lyrics: `--search`
 queries LRCLIB directly by title/artist, shows a numbered table of
-matches, and lets you pick one to view (or save) its lyrics.
+matches, and lets you pick one to view.
 
 ```bash
 ./run.sh --search "Artist Name - Song Title"
 ```
 
-By default the selected song's lyrics are printed in the terminal. If
-you'd rather save them to a file, use one of the `--*install` flags
-below instead (each takes the destination folder as its argument;
-`~` is expanded automatically):
+## Save a song's lyrics directly with `--install`
+
+If you already know which song you want and don't need the
+interactive picker, use `--install` (or one of its variants) with two
+arguments — the destination folder and the song to look for. The
+closest match on LRCLIB is picked automatically and its lyrics are
+saved into that folder; `~` is expanded automatically.
+
+```bash
+./run.sh --install       [DESTINATION FOLDER] [song name or closest match]
+./run.sh --txtinstall    [DESTINATION FOLDER] [song name or closest match]
+./run.sh --dminstall     [DESTINATION FOLDER] [song name or closest match]
+```
 
 | Flag             | Output                                                                 |
 |------------------|-------------------------------------------------------------------------|
-| `--install DIR`  | Saves a `.lrc` file (with timestamps) if synced lyrics exist, otherwise a `.txt` file. |
-| `--txtinstall DIR` | Always saves a plain `.txt` file (timestamps stripped).               |
-| `--dminstall DIR`  | Same content as `--txtinstall`, saved with a `.dm` extension instead.  |
+| `--install`      | Saves a `.lrc` file (with timestamps) if synced lyrics exist, otherwise a `.txt` file. |
+| `--txtinstall`   | Always saves a plain `.txt` file (timestamps stripped).                 |
+| `--dminstall`    | Same content as `--txtinstall`, saved with a `.dm` extension instead.   |
 
 Examples:
 
 ```bash
-./run.sh --search "Artist Name - Song Title" --install ~/Lyrics
-./run.sh --search "Artist Name - Song Title" --txtinstall ~/Lyrics
-./run.sh --search "Artist Name - Song Title" --dminstall ~/Lyrics
+./run.sh --install ~/Lyrics "Artist Name - Song Title"
+./run.sh --txtinstall ~/Lyrics "Artist Name - Song Title"
+./run.sh --dminstall ~/Lyrics "Artist Name - Song Title"
 ```
 
-These flags only apply to `--search` — the normal now-playing mode
+These flags (and `--search`) run independently of the now-playing
+mode — no music needs to be playing, and the normal now-playing mode
 never writes anything to disk.
 
 ## ASCII word mode (`--ascii`)
@@ -203,4 +213,3 @@ lyrics-sync-cli/
 ├── requirements.txt
 └── README.md
 ```
-
