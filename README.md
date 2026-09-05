@@ -49,7 +49,7 @@ chmod +x install-global.sh
 To **start the program** after installing:
 
 ```bash
-./run.sh
+lyrics-sync
 ```
 
 or, once you've opened a new terminal (or run `source ~/.bashrc` / `source ~/.zshrc`):
@@ -58,13 +58,13 @@ or, once you've opened a new terminal (or run `source ~/.bashrc` / `source ~/.zs
 lyrics-sync
 ```
 
-`run.sh` automatically activates the virtual environment and runs
+`lyrics-sync` automatically activates the virtual environment and runs
 `main.py`. Any argument you pass gets forwarded to the program, e.g.:
 
 ```bash
-./run.sh --interval 0.3      # refresh playback position more often
-./run.sh --refresh-fps 8     # refresh the UI more often
-./run.sh --ascii             # show the current word as a big ASCII-art banner
+lyrics-sync --interval 0.3      # refresh playback position more often
+lyrics-sync --refresh-fps 8     # refresh the UI more often
+lyrics-sync --ascii             # show the current word as a big ASCII-art banner
 ```
 
 The same works through the alias: `lyrics-sync --ascii`, etc.
